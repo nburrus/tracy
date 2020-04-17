@@ -23,7 +23,12 @@ public:
 
     ~Thread()
     {
-        WaitForSingleObject( m_hnd, INFINITE );
+        // FIXME: this is not a proper fix, but when Tracy is part of a dll,
+        // we can end up hanging here forever otherwise.
+        // See issue https://bitbucket.org/wolfpld/tracy/issues/25/tracy-may-cause-deadlock-s-on-exit-when
+        // WaitForSingleObject( m_hnd, INFINITE );
+        if (WaitForSingleObject( m_hnd, 1000 ) != WAIT_OBJECT_0)
+            TerminateThread( m_hnd, 0 );
         CloseHandle( m_hnd );
     }
 
